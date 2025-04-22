@@ -1,3 +1,4 @@
+import time
 import os
 import random
 import sys
@@ -26,7 +27,34 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
         yoko = False
     if rct.top < 0 or HEIGHT < rct.bottom:  # 画面外だったら
         tate = False
-    return (yoko, tate)
+    return yoko, tate
+
+def gameover(screen: pg.Surface) -> None:
+    # GameOver用四角イメージ作成
+    over_img = pg.Surface((WIDTH, HEIGHT))
+    over_img.set_alpha(150)
+    # over_imgに黒い四角形を描画 
+    pg.draw.rect(over_img, (0,0,0), pg.Rect(0,0,WIDTH,HEIGHT))
+    over_rct = over_img.get_rect()
+    over_rct.center = WIDTH/2, HEIGHT/2
+    screen.blit(over_img,over_rct)
+    #文字列を作成
+    fonto = pg.font.Font(None, 80)
+    txt = fonto.render("Game Over", True, (255, 255, 255))
+    txt_rct = txt.get_rect()
+    txt_rct.center = (WIDTH/2,HEIGHT/2)
+    screen.blit(txt, txt_rct)
+    #こうかとん画像を作成＆表示
+    kksad_img = pg.transform.rotozoom(pg.image.load("fig/8.png"), 0, 0.9)
+    kksad_rct = kksad_img.get_rect()  # こうかとん一人目
+    kksad_rct.center = 350, 325
+    screen.blit(kksad_img,kksad_rct)  # こうかとん二人目
+    kksad_rct.center = 750, 325
+    screen.blit(kksad_img,kksad_rct)
+    pg.display.update()
+    time.sleep(5)
+
+
 
 
 def main():
@@ -41,7 +69,8 @@ def main():
     bb_img = pg.Surface((20, 20))
     pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
     bb_rct = kk_img.get_rect()
-    bb_rct.center = random.randint(0, WIDTH),random.randint(0, HEIGHT)
+    bb_rct.centerx = random.randint(0, WIDTH)
+    bb_rct.centery = random.randint(0, HEIGHT)
     bb_img.set_colorkey((0, 0, 0))
     vx = +5
     vy = +5
@@ -54,9 +83,9 @@ def main():
                 return
         screen.blit(bg_img, [0, 0]) 
 
-        # こうかとんRectと爆弾Rectが衝突していたから
+        # こうかとんRectと爆弾Rectが衝突したら
         if kk_rct.colliderect(bb_rct):
-            print("GameOver")
+            gameover(screen)  # GameOver処理を行う
             return
 
         key_lst = pg.key.get_pressed()
@@ -69,7 +98,6 @@ def main():
         kk_rct.move_ip(sum_mv)
         if check_bound(kk_rct) != (True, True):  # 画面外だったら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 画面内に戻す
-
         screen.blit(kk_img, kk_rct)
         bb_rct.move_ip(vx, vy)  # 爆弾の移動
         yoko, tate = check_bound(bb_rct)
