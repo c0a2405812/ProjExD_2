@@ -43,7 +43,7 @@ def gameover(screen: pg.Surface) -> None:
     pg.draw.rect(over_img, (0,0,0), pg.Rect(0,0,WIDTH,HEIGHT))
     over_rct = over_img.get_rect()
     over_rct.center = WIDTH/2, HEIGHT/2
-    screen.blit(over_img,over_rct)
+    screen.blit(over_img, over_rct)
     #文字列を作成
     fonto = pg.font.Font(None, 80)
     txt = fonto.render("Game Over", True, (255, 255, 255))
