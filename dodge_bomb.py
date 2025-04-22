@@ -30,7 +30,13 @@ def check_bound(rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 def gameover(screen: pg.Surface) -> None:
-    # GameOver用四角イメージ作成
+    """
+    引数：スクリーンのSurface
+    戻り値：無し
+    GameOverの字を表示し、その両隣に泣いているこうかとんを表示する。
+    5秒経つと終了
+    """
+    # GameOver用四角形イメージ作成
     over_img = pg.Surface((WIDTH, HEIGHT))
     over_img.set_alpha(150)
     # over_imgに黒い四角形を描画 
@@ -54,8 +60,25 @@ def gameover(screen: pg.Surface) -> None:
     pg.display.update()
     time.sleep(5)
 
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    引数：なし
+    戻り値：爆弾Surfaceのサイズをまとめたリストと、加速度リストのタプル
+    サイズの異なる爆弾Surfaceを要素としたリストと加速度リストをタプルで返す
+    """
+    #加速度のリスト
+    bb_accs = [a for a in range(1, 11)]
+    #拡大爆弾のリスト
+    bb_big = [0 for a in range(1, 11)]
+    for r in range(1, 11):  # 拡大爆弾Surfaceの要素作成
+        bb_img = pg.Surface((20*r,20*r))
+        pg.draw.circle(bb_img,(255, 0, 0), (10*r, 10*r), 10*r)
+        bb_img.set_colorkey((0, 0, 0))
+        bb_big[r-1] = bb_img
 
-
+    #戻り値用のタプル
+    bb_tuple = tuple([bb_accs,bb_big])
+    return bb_tuple
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -78,6 +101,7 @@ def main():
     clock = pg.time.Clock()
     tmr = 0
     while True:
+
         for event in pg.event.get():
             if event.type == pg.QUIT: 
                 return
@@ -99,6 +123,14 @@ def main():
         if check_bound(kk_rct) != (True, True):  # 画面外だったら
             kk_rct.move_ip(-sum_mv[0], -sum_mv[1])  # 画面内に戻す
         screen.blit(kk_img, kk_rct)
+
+        bb_imgs,bb_accs = init_bb_imgs()
+        print(bb_imgs)
+        print(bb_accs)
+        avx = vx*bb_accs[min(tmr//500, 9)]
+        bb_img = bb_imgs[min(tmr//500, 9)]
+        print(avx)
+        bb_rct = bb_img.get_rect()
         bb_rct.move_ip(vx, vy)  # 爆弾の移動
         yoko, tate = check_bound(bb_rct)
         if not yoko:  # 左右どちらかにはみ出ていたら
